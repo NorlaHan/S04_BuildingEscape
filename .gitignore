@@ -1,6 +1,9 @@
 ##########################
 # Unreal Generated Files #
 ##########################
+
+## Folders
+
 **/Build/
 **/Binaries/
 **/DerivedDataCache/
@@ -8,6 +11,10 @@
 **/Saved/
 **/StarterContent/
 
+## File types
+
+# Built data for maps
+*_BuiltData.uasset
 
 ######################
 # VS Generated Files #
