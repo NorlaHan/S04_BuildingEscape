@@ -2,6 +2,7 @@
 
 
 #include "OpenDoor.h"
+#include "GameFrameWork/Actor.h"
 
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
@@ -10,7 +11,7 @@ UOpenDoor::UOpenDoor()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	// ....
 }
 
 
@@ -19,8 +20,16 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	// Find the owening actor
+	AActor* Owner = GetOwner();
+	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
+
+	// Create a rotator
+	UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"),*Owner->GetName(),*OwnerRot );
+	FRotator NewRotation = FRotator(0.f, -60.f, 0.f);
+
+	// Set the door rotation
+	Owner->SetActorRotation(NewRotation);
 }
 
 
