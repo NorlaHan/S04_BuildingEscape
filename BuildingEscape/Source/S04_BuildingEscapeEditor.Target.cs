@@ -9,6 +9,9 @@ public class S04_BuildingEscapeEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 
+        bUseUnityBuild = false;
+        bUsePCHFiles = false;
+
 		ExtraModuleNames.AddRange( new string[] { "S04_BuildingEscape" } );
 	}
 }
