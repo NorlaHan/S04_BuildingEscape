@@ -2,6 +2,8 @@
 
 
 #include "OpenDoor.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFrameWork/Actor.h"
 
 // Sets default values for this component's properties
@@ -18,23 +20,9 @@ UOpenDoor::UOpenDoor()
 // Called when the game starts
 void UOpenDoor::BeginPlay()
 {
-	Super::BeginPlay();
-	OpenDoor();
-}
-
-void UOpenDoor::OpenDoor()
-{
-
-	// Find the owening actor
-	AActor* Owner = GetOwner();
-	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
-
-	// Create a rotator
-	UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
-	FRotator NewRotation = FRotator(0.f, -60.f, 0.f);
-
-	// Set the door rotation
-	Owner->SetActorRotation(NewRotation);
+	Super::BeginPlay();	
+	Owner = GetOwner();	// Find the owening actor
+	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
@@ -47,7 +35,34 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	// If the ActorThatOpens is in the volume.
 	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s Enters, %s open."), *ActorThatOpens->GetName(), *GetOwner()->GetName());
 		OpenDoor();
-	}			
+		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+	}
+
+	if (GetWorld()->GetTimeSeconds() > (LastDoorOpenTime + DoorCloseDelay))
+	{
+		CloseDoor();
+	}
+	// Check if it is time to close the door.
 }
+
+
+void UOpenDoor::OpenDoor()
+{	
+	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
+	//UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
+
+	Owner->SetActorRotation(FRotator(0.f, OpenAlgle, 0.f));	// Set the door rotation
+}
+
+
+void UOpenDoor::CloseDoor()
+{
+	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
+	//UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
+
+	Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));	// Set the door rotation
+}
+
 
