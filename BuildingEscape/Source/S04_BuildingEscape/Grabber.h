@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/InputComponent.h"
 #include "Components/ActorComponent.h"
 #include "Grabber.generated.h"
 
@@ -33,5 +35,22 @@ private:
 	// How thick the debug line should be
 	UPROPERTY(VisibleAnywhere)
 	float DebugLineThickness = 1.f;
-		
+
+	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+	UInputComponent* InputComponent = nullptr;
+	
+	// Ray-cast and grab what's in reach
+	void Grab();
+
+	// Called when grab key is released
+	void Release();
+
+	// Find (assumed) attached physics handle
+	void FindPhysicsHandleComponent();
+
+	// Setup (assumed) attached input component
+	void SetupInputComponent();
+
+	// Return hit for first physics body in reach
+	FHitResult GetFirstPhysicsBodyInReach() const;
 };
