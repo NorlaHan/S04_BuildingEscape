@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/PrimitiveComponent.h"
 #include "GameFramework/Actor.h"
 
 #define OUT
@@ -42,7 +43,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector()*Reach);
 	/// Bad Practice end############
 
-	/// if the pgysicshandwl is attached
+	/// if the PhysicsHandle is attached
 	if (PhysicsHandle->GrabbedComponent)
 	{
 		/// move the object that we're holding
@@ -89,23 +90,25 @@ void UGrabber::Grab()
 	UE_LOG(LogTemp, Warning, TEXT("%s Grab pressed"), *GetOwner()->GetName());
 
 	/// Line trace and see if we reach any actors with physics body collision channel set
-	auto HitResult = GetFirstPhysicsBodyInReach();
-	auto ComponentToGrab = HitResult.GetComponent();
-	auto ActorHit = HitResult.GetActor();
+	auto HitResult = GetFirstPhysicsBodyInReach();		// FHitResult
+	auto ComponentToGrab = HitResult.GetComponent();	// *UPrimitiveComponent
+	auto ActorHit = HitResult.GetActor();				// *AActor
 
 	/// If we hit something then attach a physics handle
 	if (ActorHit)
 	{
 		// Attach physics handle
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
-			ComponentToGrab,
-			NAME_None,
-			HitResult.Location,
-			FRotator::ZeroRotator
+			ComponentToGrab,		// *UPrimitiveComponent
+			NAME_None,				// FName BoneName
+			//ComponentToGrab->GetOwner()->GetActorLocation()	// Grab by the root.
+			HitResult.Location		// FVector Location			// Grab by the point where Line tracer hits.
+			,FRotator::ZeroRotator	// Rotator Rotation
 		);
 	}	
 }
 
+// Return HitResult if the Line tracing hits.
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
 	// Get player viewpoint this tick
