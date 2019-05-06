@@ -3,11 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/ActorComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Grabber.generated.h"
 
+struct LineTracingPointLocation
+{
+	FVector StartPointLocation;
+	FVector EndPointLocation;
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class S04_BUILDINGESCAPE_API UGrabber : public UActorComponent
@@ -53,4 +58,7 @@ private:
 
 	// Return hit for first physics body in reach
 	FHitResult GetFirstPhysicsBodyInReach() const;
+
+	// Get the Start and end point FVector in a struct
+	LineTracingPointLocation GetLineTracingPoint() const;
 };
