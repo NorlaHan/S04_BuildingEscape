@@ -50,7 +50,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	{
 		/// move the object that we're holding
 		LineTracingPointLocation LTPLocation = GetLineTracingPoint();	// Call LTP struct
-		//PhysicsHandle->SetTargetLocation(LineTraceEnd);
 		PhysicsHandle->SetTargetLocation(LTPLocation.EndPointLocation);
 	}		
 }
@@ -59,14 +58,8 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 void UGrabber::FindPhysicsHandleComponent() 
 {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle)
+	if (PhysicsHandle == nullptr)
 	{
-		/// Physics handle is found
-		UE_LOG(LogTemp, Warning, TEXT("%s Congrats. PhysicsHandle found"), *GetOwner()->GetName());
-	}
-	else
-	{
-		/// 
 		UE_LOG(LogTemp, Error, TEXT("%s PhysicsHandle is missing!"), *GetOwner()->GetName());
 	}
 }
@@ -77,8 +70,6 @@ void UGrabber::SetupInputComponent()
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s Congrats. Input Component found"), *GetOwner()->GetName());
-		/// Bind the input action
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
@@ -91,20 +82,19 @@ void UGrabber::SetupInputComponent()
 
 void UGrabber::Grab()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s Grab pressed"), *GetOwner()->GetName());
+	// UE_LOG(LogTemp, Warning, TEXT("%s Grab pressed"), *GetOwner()->GetName());
 
 	/// Line trace and see if we reach any actors with physics body collision channel set
 	auto HitResult = GetFirstPhysicsBodyInReach();		// FHitResult
-	auto ComponentToGrab = HitResult.GetComponent();	// *UPrimitiveComponent
+	auto ComponentToGrab = HitResult.GetComponent();	// *UPrimitiveComponent, get the mesh in this case
 	auto ActorHit = HitResult.GetActor();				// *AActor
 
 	/// If we hit something then attach a physics handle
 	if (ActorHit)
 	{
-		// Attach physics handle
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,		// *UPrimitiveComponent
-			NAME_None,				// FName BoneName
+			NAME_None,				// FName BoneName, not bone needed in this case
 			//ComponentToGrab->GetOwner()->GetActorLocation()	// Grab by the root.
 			HitResult.Location		// FVector Location			// Grab by the point where Line tracer hits.
 			,FRotator::ZeroRotator	// Rotator Rotation
@@ -114,31 +104,21 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s Grab Release"), *GetOwner()->GetName());
-	// TODO release physics handle
+	// UE_LOG(LogTemp, Warning, TEXT("%s Grab Release"), *GetOwner()->GetName());
 	PhysicsHandle->ReleaseComponent();
 }
 
 // Return HitResult if the Line tracing hits.
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-	// Get player viewpoint this tick
-	/*//FVector PlayerViewPointLocation;
-	//FRotator PlayerViewPointRotation;
-	//GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-	//	OUT PlayerViewPointLocation,
-	//	OUT PlayerViewPointRotation
-	//);
-
-	//FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector()*Reach);
-	*/
+	LineTracingPointLocation LTPLocation = GetLineTracingPoint();	// Call LTP struct
 
 	/// Draw a red trace in the world to visualise
 	/*
 	DrawDebugLine(
 		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
+		LTPLocation.StartPointLocation,
+		LTPLocation.EndPointLocation,
 		FColor(255, 0, 0),
 		false,
 		0.f,
@@ -147,30 +127,26 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 	);
 	*/
 
-	LineTracingPointLocation LTPLocation = GetLineTracingPoint();	// Call LTP struct
-
 	/// Setup query parameters
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
 
 	/// Line-trace (AKA Ray-cast) out to reach distance
-	FHitResult Hit;
+	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByObjectType
 (
-		OUT Hit,
-		//PlayerViewPointLocation,
+		OUT HitResult,
 		LTPLocation.StartPointLocation,
-		//LineTraceEnd,
 		LTPLocation.EndPointLocation,
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
 	/// See what we hit
-	AActor* ActorHit = Hit.GetActor();
+	AActor* ActorHit = HitResult.GetActor();
 	if (ActorHit)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s is in tracing."), *(ActorHit->GetName()));
 	}
-	return Hit;
+	return HitResult;
 }
 
 // Get the Line-Tracing Start and End point in a struct
