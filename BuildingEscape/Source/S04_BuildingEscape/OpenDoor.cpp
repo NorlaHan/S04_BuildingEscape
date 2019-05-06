@@ -4,7 +4,10 @@
 #include "OpenDoor.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/PrimitiveComponent.h"
 #include "GameFrameWork/Actor.h"
+
+#define OUT	// Macro, do nothing but as a mark
 
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
@@ -22,7 +25,6 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();	
 	Owner = GetOwner();	// Find the owening actor
-	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
@@ -32,19 +34,20 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// poll the trigger volume
-	// If the ActorThatOpens is in the volume.
-	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+		// If the ActorThatOpens is in the volume.
+		//if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+	if (GetTotalMassOfActorsOnPlate() > 40.f)	// TODO make into a parameter
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s Enters, %s open."), *ActorThatOpens->GetName(), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Something Enters, %s open."), *GetOwner()->GetName());
 		OpenDoor();
 		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
 	}
 
+	// Check if it is time to close the door.
 	if (GetWorld()->GetTimeSeconds() > (LastDoorOpenTime + DoorCloseDelay))
 	{
 		CloseDoor();
 	}
-	// Check if it is time to close the door.
 }
 
 
@@ -65,4 +68,21 @@ void UOpenDoor::CloseDoor()
 	Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));	// Set the door rotation
 }
 
+float UOpenDoor::GetTotalMassOfActorsOnPlate() 
+{
+	float TotalMass = 0.f;
 
+	// Find all the overlapping actors
+	TArray<AActor*> OverlappingActors;
+	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+
+	for (const auto* Actor : OverlappingActors)
+	{
+		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+		
+		UE_LOG(LogTemp, Warning, TEXT(" %s overlapped, weight is %s"),*Actor->GetName(),*FString::SanitizeFloat(TotalMass));
+	}
+	// Iterate through them adding their masses
+
+	return TotalMass;
+}

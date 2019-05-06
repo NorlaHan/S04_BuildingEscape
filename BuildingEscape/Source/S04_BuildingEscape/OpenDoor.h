@@ -25,6 +25,7 @@ protected:
 
 	void CloseDoor();
 
+	
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -35,12 +36,13 @@ private:
 
 	UPROPERTY(EditAnywhere)		// Like a public in Unity
 	ATriggerVolume* PressurePlate;
-		
-	UPROPERTY(EditAnywhere)
-	AActor* ActorThatOpens;	// Remember pawn inherits from actor
 
 	AActor* Owner;
 	UPROPERTY(EditAnywhere)
 	float DoorCloseDelay = 1.f;
 	float LastDoorOpenTime;
+
+	// Return total mass in KG
+	float GetTotalMassOfActorsOnPlate();
+
 };
