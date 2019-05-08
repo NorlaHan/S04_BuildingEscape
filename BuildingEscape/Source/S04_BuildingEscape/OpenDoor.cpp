@@ -25,6 +25,10 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();	
 	Owner = GetOwner();	// Find the owening actor
+	if (!PressurePlate)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s, PressurePlate is nullptr please assign valid object."), *Owner->GetName());
+	}
 }
 
 
@@ -36,37 +40,45 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	// poll the trigger volume
 		// If the ActorThatOpens is in the volume.
 		//if (PressurePlate->IsOverlappingActor(ActorThatOpens))
-	if (GetTotalMassOfActorsOnPlate() > 40.f)	// TODO make into a parameter
+	if (GetTotalMassOfActorsOnPlate() > TriggerMass)	// TODO make into a parameter
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Something Enters, %s open."), *GetOwner()->GetName());
-		OpenDoor();
-		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+		//UE_LOG(LogTemp, Warning, TEXT("Something Enters, %s open."), *GetOwner()->GetName());
+		OnOpen.Broadcast();
+		//LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+	}
+	else
+	{
+		OnClose.Broadcast();
 	}
 
 	// Check if it is time to close the door.
-	if (GetWorld()->GetTimeSeconds() > (LastDoorOpenTime + DoorCloseDelay))
-	{
-		CloseDoor();
-	}
+	//if (GetWorld()->GetTimeSeconds() > (LastDoorOpenTime + DoorCloseDelay))
+	//{
+	//	CloseDoor();
+	//}
+	
 }
 
-
+/*
 void UOpenDoor::OpenDoor()
 {	
-	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
+	//FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
 	//UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
 
-	Owner->SetActorRotation(FRotator(0.f, OpenAlgle, 0.f));	// Set the door rotation
+	//Owner->SetActorRotation(FRotator(0.f, OpenAlgle, 0.f));	// Set the door rotation
+	OnOpen.Broadcast();
 }
 
 
 void UOpenDoor::CloseDoor()
 {
 	FString OwnerRot = Owner->GetActorRotation().Vector().ToString();
-	//UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
+	UE_LOG(LogTemp, Warning, TEXT("%s rotation is %s"), *Owner->GetName(), *OwnerRot);
 
-	Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));	// Set the door rotation
+	//Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));	// Set the door rotation
+	OnClose.Broadcast();
 }
+*/
 
 float UOpenDoor::GetTotalMassOfActorsOnPlate() 
 {
@@ -74,6 +86,7 @@ float UOpenDoor::GetTotalMassOfActorsOnPlate()
 
 	// Find all the overlapping actors
 	TArray<AActor*> OverlappingActors;
+	if (!PressurePlate)	{return TotalMass;}
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	for (const auto* Actor : OverlappingActors)

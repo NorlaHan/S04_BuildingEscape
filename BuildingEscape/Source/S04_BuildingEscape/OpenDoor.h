@@ -7,6 +7,7 @@
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class S04_BUILDINGESCAPE_API UOpenDoor : public UActorComponent
@@ -21,26 +22,37 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	/*
 	void OpenDoor();
 
 	void CloseDoor();
-
+	*/
 	
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(BlueprintAssignable)
+	FDoorEvent OnOpen;
+
+	UPROPERTY(BlueprintAssignable)
+	FDoorEvent OnClose;
+
 private:
-	UPROPERTY(VisibleAnywhere)	// Like a serializefield in Unity
-	float OpenAlgle = 90.f;
 
 	UPROPERTY(EditAnywhere)		// Like a public in Unity
-	ATriggerVolume* PressurePlate;
+	ATriggerVolume* PressurePlate = nullptr;
 
-	AActor* Owner;
+	// The owning door
+	AActor* Owner = nullptr;
+
+	// The mass to trigger the pressure plate
 	UPROPERTY(EditAnywhere)
-	float DoorCloseDelay = 1.f;
-	float LastDoorOpenTime;
+	float TriggerMass = 30.f;
+
+	//UPROPERTY(EditAnywhere)
+	//float DoorCloseDelay = 1.f;
+	//float LastDoorOpenTime;
 
 	// Return total mass in KG
 	float GetTotalMassOfActorsOnPlate();

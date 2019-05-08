@@ -43,7 +43,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	FVector LineTraceEnd = PlayerViewPointLocation + (PlayerViewPointRotation.Vector()*Reach);
 	*/// Bad Practice end############
 
-	
+	if (!PhysicsHandle)	{return;}
 
 	/// if the PhysicsHandle is attached
 	if (PhysicsHandle->GrabbedComponent)
@@ -60,7 +60,7 @@ void UGrabber::FindPhysicsHandleComponent()
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	if (PhysicsHandle == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s PhysicsHandle is missing!"), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Error, TEXT("%s PhysicsHandle component is missing!"), *GetOwner()->GetName());
 	}
 }
 
@@ -92,6 +92,7 @@ void UGrabber::Grab()
 	/// If we hit something then attach a physics handle
 	if (ActorHit)
 	{
+		if (!PhysicsHandle) { return; }
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,		// *UPrimitiveComponent
 			NAME_None,				// FName BoneName, not bone needed in this case
@@ -105,6 +106,7 @@ void UGrabber::Grab()
 void UGrabber::Release()
 {
 	// UE_LOG(LogTemp, Warning, TEXT("%s Grab Release"), *GetOwner()->GetName());
+	if (!PhysicsHandle) { return; }
 	PhysicsHandle->ReleaseComponent();
 }
 
