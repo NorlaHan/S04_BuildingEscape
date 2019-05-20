@@ -7,7 +7,7 @@
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorEvent);		// Macro, do not work with intellisense. appear error unitil compiled in the Editor. Can make many functions with it.
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class S04_BUILDINGESCAPE_API UOpenDoor : public UActorComponent
